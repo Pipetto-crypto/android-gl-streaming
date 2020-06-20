@@ -41,7 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 // To prevent incompatible version, change every
-#define GLS_VERSION 8
+#define GLS_VERSION 9
 // #define GL_MAJOR_VERSION 1
 // #define GL_MINOR_VERSION 2
 
@@ -118,6 +118,7 @@ enum GL_Server_Command
   GLSC_glDisableVertexAttribArray,
   GLSC_glDrawArrays,
   GLSC_glDrawElements,
+  GLSC_glDrawRangeElements,
   GLSC_glEnable,
   GLSC_glEnableVertexAttribArray,
   GLSC_glFinish,
@@ -749,6 +750,18 @@ typedef struct
   uint32_t type;
   uint32_t indices;
 } gls_glDrawElements_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t mode;
+  uint32_t start;
+  uint32_t end;
+  int32_t count;
+  uint32_t type;
+  uint32_t indices;
+} gls_glDrawRangeElements_t;
 
 
 typedef struct

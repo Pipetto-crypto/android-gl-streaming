@@ -77,21 +77,6 @@ Display *xDisplay;
 int xScreenId;
 
 gls_context_t glsc_global;
-static struct vbo_state
-{
-    GLuint vbo, ibo, ibo_emu;
-} vbo;
-
-struct attrib_ptr_s {
-    GLboolean   isenabled;
-    GLint       size;
-    GLenum      type;
-    GLsizei     stride;
-    GLboolean   normalized;
-    const GLvoid *ptr;
-    GLuint vbo_id;
-    GLuint webgl_vbo_id;
-} vt_attrib_pointer[16];
 
 float get_diff_time(struct timeval start, struct timeval end);
 int check_batch_overflow(size_t size, const char *msg);
