@@ -31,7 +31,7 @@ EGLBoolean eglGetConfigAttrib( EGLDisplay dpy, EGLConfig config, EGLint attribut
     
 	wait_for_data("timeout:eglGetConfigAttrib");
 	gls_ret_eglGetConfigAttrib_t *ret = (gls_ret_eglGetConfigAttrib_t *)glsc_global.tmp_buf.buf;
-	*value = value;
+	*value = ret->value;
 	return ret->success;
 }
 

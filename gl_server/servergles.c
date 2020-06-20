@@ -408,7 +408,6 @@ void glse_glGetAttribLocation()
 void glse_glGetError()
 {
   GLuint error = glGetError();
-  // Should check gl error inside glGetError() ???
   gls_ret_glGetError_t *ret = (gls_ret_glGetError_t *)glsec_global.tmp_buf.buf;
   ret->cmd = GLSC_glGetError;
   ret->error = error;

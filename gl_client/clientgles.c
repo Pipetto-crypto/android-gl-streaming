@@ -1,5 +1,8 @@
 // This file declare OpenGL ES methods for streaming
 
+#include <stdio.h>
+#include <string.h>
+
 #include "glclient.h"
 #include "GLES2/gl2.h"
 
@@ -36,11 +39,6 @@ GL_APICALL void GL_APIENTRY glBindBuffer (GLenum target, GLuint buffer)
   GLS_SET_COMMAND_PTR_BATCH(c, glBindBuffer);
   c->target = target;
   c->buffer = buffer;
-  if( target == GL_ARRAY_BUFFER )
-      vbo.vbo = buffer;
-  else if( target == GL_ELEMENT_ARRAY_BUFFER )
-      vbo.ibo = buffer;
-  else printf("gls: unsupported buffer type!\n");
   GLS_PUSH_BATCH(glBindBuffer);
 }
 
@@ -249,7 +247,6 @@ GL_APICALL void GL_APIENTRY glDeleteTextures (GLsizei n, const GLuint* textures)
 
 GL_APICALL void GL_APIENTRY glDisableVertexAttribArray (GLuint index)
 {
-  vt_attrib_pointer[index].isenabled = GL_FALSE;
   GLS_SET_COMMAND_PTR_BATCH(c, glDisableVertexAttribArray);
   c->index = index;
   GLS_PUSH_BATCH(glDisableVertexAttribArray);
@@ -511,7 +508,7 @@ GL_APICALL const GLubyte* GL_APIENTRY glGetString(GLenum name)
 	wait_for_data("timeout:glGetString");
 	gls_ret_glGetString_t *ret = (gls_ret_glGetString_t *)glsc_global.tmp_buf.buf;
 	// printf("glGetString(%i) return %s\n", name, &ret->params[0]);
-	return &ret->params[0];
+	return ret->params;
 }
 
 
@@ -866,7 +863,6 @@ GL_APICALL void GL_APIENTRY glUseProgram (GLuint program)
 
 GL_APICALL void GL_APIENTRY glVertexAttribPointer (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr)
 {
-  vt_attrib_pointer[indx].vbo_id = vbo.vbo;
   GLS_SET_COMMAND_PTR_BATCH(c, glVertexAttribPointer);
   c->indx = indx;
   c->size = size;
@@ -929,7 +925,7 @@ GL_APICALL void GL_APIENTRY glGetProgramiv (GLuint program, GLenum pname, GLint*
     
 	wait_for_data("timeout:glGetProgramiv");
 	gls_ret_glGetProgramiv_t *ret = (gls_ret_glGetProgramiv_t *)glsc_global.tmp_buf.buf;
-	params = ret->params;
+	*params = ret->params;
 }
 
 
@@ -947,7 +943,7 @@ GL_APICALL void GL_APIENTRY glReadPixels (GLint x, GLint y, GLsizei width, GLsiz
     
 	wait_for_data("timeout:glReadPixels");
 	gls_ret_glReadPixels_t *ret = (gls_ret_glReadPixels_t *)glsc_global.tmp_buf.buf;
-	pixels = ret->pixels;
+	pixels = (GLvoid*) ret->pixels;
 	// memcpy(pixels, ret->pixels, width * height); // width * height = size correct???
 }
 
@@ -967,6 +963,6 @@ GL_APICALL void GL_APIENTRY glGetActiveUniform (GLuint program, GLuint index, GL
 	*length = ret->length;
 	*size = ret->size;
 	*type = ret->type;
-	*name = &ret->name[0];
+	*name = ret->name;
 }
 
