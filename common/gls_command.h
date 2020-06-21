@@ -810,14 +810,14 @@ typedef struct
   uint32_t cmd;
   uint32_t index;
   uint32_t program;
-  int32_t bufsize;
+  uint32_t bufsize;
 } gls_glGetActiveUniform_t;
 
 
 typedef struct
 {
   uint32_t cmd;
-  int32_t length;
+  uint32_t length;
   int32_t size;
   uint32_t type;
   char name[GLS_STRING_SIZE_PLUS];

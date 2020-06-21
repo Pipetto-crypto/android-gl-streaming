@@ -385,11 +385,11 @@ void glse_glGetActiveUniform()
 {
   GLSE_SET_COMMAND_PTR(c, glGetActiveUniform);
   gls_ret_glGetActiveUniform_t *ret = (gls_ret_glGetActiveUniform_t *)glsec_global.tmp_buf.buf;
-  char* name;
-  glGetActiveUniform (c->program, c->index, c->bufsize, &ret->length, &ret->size, &ret->type, name);
+  // char* name;
+  glGetActiveUniform (c->program, c->index, c->bufsize, &ret->length, &ret->size, &ret->type, ret->name);
   ret->cmd = GLSC_glGetActiveUniform;
-  ret->name[GLS_STRING_SIZE_PLUS - 1] = '\0';
-  strncpy(ret->name, name, ret->length);
+  // ret->name[GLS_STRING_SIZE_PLUS - 1] = '\0';
+  // strncpy(ret->name, name, ret->length);
   glse_cmd_send_data(0, sizeof(gls_ret_glGetActiveUniform_t), (char *)glsec_global.tmp_buf.buf);
 }
 
