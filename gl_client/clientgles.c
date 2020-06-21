@@ -93,7 +93,6 @@ GL_APICALL void GL_APIENTRY glBlendFunc (GLenum sfactor, GLenum dfactor)
 GL_APICALL void GL_APIENTRY glBufferData (GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage)
 {
   gls_cmd_flush();
-  // printf("GL_DBG: glBufferData size=%i realsize=%i\n",size,sizeof(data));
   gls_cmd_send_data(0, (uint32_t)size, (void *)data);
   GLS_SET_COMMAND_PTR(c, glBufferData);
   c->target = target;
@@ -292,15 +291,19 @@ GL_APICALL void GL_APIENTRY glDrawElements (GLenum mode, GLsizei count, GLenum t
   c->mode = mode;
   c->count = count;
   c->type = type;
-#if __WORDSIZE == 64
-  c->indices = (uint32_t)(uint64_t)indices;
-#else
-  c->indices = (uint32_t)indices;
-#endif
+/*
+  printf("Indices:\n");
+  for (int i = 0; i < count; i++) {
+	  printf("%i, ", (uint32_t) &indices[i]);
+  }
+  printf("\n");
+*/
+  char* strIndices = (char*) &indices;
+  strncpy(c->indices, strIndices, strnlen(strIndices, 0xA00000));
   GLS_PUSH_BATCH(glDrawElements);
 }
 
-
+/*
 GL_APICALL void GL_APIENTRY glDrawRangeElements( GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices )
 {
     GLS_SET_COMMAND_PTR_BATCH(c, glDrawRangeElements);
@@ -316,7 +319,7 @@ GL_APICALL void GL_APIENTRY glDrawRangeElements( GLenum mode, GLuint start, GLui
   #endif
 	GLS_PUSH_BATCH(glDrawRangeElements);
 }
-
+*/
 
 GL_APICALL void GL_APIENTRY glDrawArrays (GLenum mode, GLint first, GLsizei count)
 {

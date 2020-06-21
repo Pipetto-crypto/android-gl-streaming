@@ -84,6 +84,12 @@ int gles_flushCommand(gls_command_t *c) {
         glse_glDrawElements();
         pop_batch_command(sizeof(gls_glDrawElements_t));
         break;
+/*
+      case GLSC_glDrawRangeElements:
+        glse_glDrawRangeElements();
+        pop_batch_command(sizeof(gls_glDrawRangeElements_t));
+        break;
+*/
       case GLSC_glEnable:
         glse_glEnable();
         pop_batch_command(sizeof(gls_glEnable_t));
@@ -667,9 +673,16 @@ void glse_glDisable()
 void glse_glDrawElements()
 {
   GLSE_SET_COMMAND_PTR(c, glDrawElements);
-  glDrawElements (c->mode, c->count, c->type, (const GLvoid*)c->indices);
+  glDrawElements(c->mode, c->count, c->type, (const GLvoid*)c->indices);
 }
 
+/*
+void glse_glDrawRangeElements()
+{
+  GLSE_SET_COMMAND_PTR(c, glDrawRangeElements);
+  glDrawRangeElements(c->mode, c->start, c->end, c->count, c->type, (const GLvoid*)c->indices);
+}
+*/
 
 void glse_glGetShaderInfoLog()
 {
