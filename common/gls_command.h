@@ -273,7 +273,7 @@ typedef struct
 {
   uint32_t cmd;
 // FIXME sending return data???
-  uint32_t configs[GLS_DATA_SIZE];
+  char configs[GLS_DATA_SIZE];
   uint32_t num_config;
   uint32_t success;
 } gls_ret_eglChooseConfig_t;
@@ -300,6 +300,53 @@ typedef struct
   uint32_t cmd;
   uint32_t dpy;
   uint32_t config;
+} gls_eglCreatePbufferSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t surface;
+} gls_ret_eglCreatePbufferSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t config;
+  uint32_t pixmap;
+} gls_eglCreatePixmapSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t surface;
+} gls_ret_eglCreatePixmapSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t config;
+  uint32_t window;
+} gls_eglCreateWindowSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t surface;
+} gls_ret_eglCreateWindowSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t config;
   uint32_t attribute;
 } gls_eglGetConfigAttrib_t;
 
@@ -317,6 +364,21 @@ typedef struct
   uint32_t cmd;
   uint32_t success;
 } gls_ret_eglDestroyContext_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t surface;
+} gls_eglDestroySurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t success;
+} gls_ret_eglDestroySurface_t;
 
 
 typedef struct
