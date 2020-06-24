@@ -46,15 +46,12 @@ typedef struct
 #endif // __ANDROID__
 } graphics_context_t;
 
-#define check_egl_err(FUNCNAME) base_check_egl_err(#FUNCNAME);
-#define check_gl_err(FUNCNAME) base_check_gl_err(#FUNCNAME);
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void base_check_egl_err(char* funcname);
-void base_check_gl_err(char* funcname);
+void check_egl_err(int funcname);
+void check_gl_err(int funcname);
 
 EGLConfig config;
 #ifdef USE_X11

@@ -33,6 +33,33 @@ void glse_eglChooseConfig()
   glse_cmd_send_data(0,sizeof(gls_ret_eglChooseConfig_t),(char *)glsec_global.tmp_buf.buf);
 }
 
+void glse_eglCreateContext()
+{
+  GLSE_SET_COMMAND_PTR(c, eglCreateContext);
+  gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsec_global.tmp_buf.buf;
+  EGLContext context = eglCreateContext(c->dpy, c->config, c->share_list, dat->attrib_list);
+  
+  if (context != EGL_NO_CONTEXT) {
+	  glsec_global.gc->context = context;
+  }
+  
+  gls_ret_eglCreateContext_t *ret = (gls_ret_eglCreateContext_t *)glsec_global.tmp_buf.buf;
+  ret->cmd = GLSC_eglCreateContext;
+  ret->context = context;
+  glse_cmd_send_data(0, sizeof(gls_ret_eglCreateContext_t), (char *)glsec_global.tmp_buf.buf);
+}
+
+void glse_eglDestroyContext()
+{
+  GLSE_SET_COMMAND_PTR(c, eglDestroyContext);
+  EGLBoolean success = eglDestroyContext(c->dpy, c->ctx);
+  
+  gls_ret_eglDestroyContext_t *ret = (gls_ret_eglDestroyContext_t *)glsec_global.tmp_buf.buf;
+  ret->cmd = GLSC_eglDestroyContext;
+  ret->success = success;
+  glse_cmd_send_data(0, sizeof(gls_ret_eglDestroyContext_t), (char *)glsec_global.tmp_buf.buf);
+}
+
 void glse_eglGetConfigAttrib()
 {
   GLSE_SET_COMMAND_PTR(c, eglGetConfigAttrib);
@@ -64,6 +91,10 @@ void glse_eglGetCurrentContext()
 {
   EGLContext context = eglGetCurrentContext();
   
+  if (context != EGL_NO_CONTEXT) {
+	  glsec_global.gc->context = context;
+  }
+  
   gls_ret_eglGetCurrentContext_t *ret = (gls_ret_eglGetCurrentContext_t *)glsec_global.tmp_buf.buf;
   ret->cmd = GLSC_eglGetCurrentContext;
   ret->context = context;
@@ -73,7 +104,11 @@ void glse_eglGetCurrentContext()
 void glse_eglGetCurrentDisplay()
 {
   EGLDisplay display = eglGetCurrentDisplay();
-  
+
+  if (display == EGL_NO_DISPLAY) {
+	  display = glsec_global.gc->display;
+  }
+
   gls_ret_eglGetCurrentDisplay_t *ret = (gls_ret_eglGetCurrentDisplay_t *)glsec_global.tmp_buf.buf;
   ret->cmd = GLSC_eglGetCurrentDisplay;
   ret->display = display;
@@ -84,6 +119,10 @@ void glse_eglGetCurrentSurface()
 {
   GLSE_SET_COMMAND_PTR(c, eglGetCurrentSurface);
   EGLSurface surface = eglGetCurrentSurface(c->readdraw);
+  
+  if (surface != EGL_NO_SURFACE && c->readdraw == EGL_DRAW) {
+	  glsec_global.gc->surface = surface;
+  }
   
   gls_ret_eglGetCurrentSurface_t *ret = (gls_ret_eglGetCurrentSurface_t *)glsec_global.tmp_buf.buf;
   ret->cmd = GLSC_eglGetCurrentSurface;
@@ -105,13 +144,23 @@ void glse_eglGetError()
 void glse_eglInitialize()
 {
   GLSE_SET_COMMAND_PTR(c, eglInitialize);
-  EGLBoolean success = EGL_TRUE; // Current stub instead of real init
-  // eglInitialize(c->dpy, c->major, c->minor);
-  
   gls_ret_eglInitialize_t *ret = (gls_ret_eglInitialize_t *)glsec_global.tmp_buf.buf;
+  EGLBoolean success = eglInitialize(c->dpy, &ret->major, &ret->minor);
+  
   ret->cmd = GLSC_eglInitialize;
   ret->success = success;
   glse_cmd_send_data(0,sizeof(gls_ret_eglInitialize_t),(char *)glsec_global.tmp_buf.buf);
+}
+
+void glse_eglMakeCurrent()
+{
+  GLSE_SET_COMMAND_PTR(c, eglMakeCurrent);
+  EGLBoolean success = eglMakeCurrent(c->dpy, c->draw, c->read, c->ctx);
+  
+  gls_ret_eglMakeCurrent_t *ret = (gls_ret_eglMakeCurrent_t *)glsec_global.tmp_buf.buf;
+  ret->cmd = GLSC_eglMakeCurrent;
+  ret->success = success;
+  glse_cmd_send_data(0, sizeof(gls_ret_eglMakeCurrent_t), (char *)glsec_global.tmp_buf.buf);
 }
 
 void glse_eglQueryContext()
@@ -157,8 +206,7 @@ void glse_eglTerminate()
   GLSE_SET_COMMAND_PTR(c, eglTerminate);
   gls_ret_eglTerminate_t *ret = (gls_ret_eglTerminate_t *)glsec_global.tmp_buf.buf;
   ret->cmd = GLSC_eglTerminate;
-  ret->success = EGL_TRUE; // Current stub instead of real init
-  // eglTerminate(c->dpy);
+  ret->success = eglTerminate(c->dpy);
   
   glse_cmd_send_data(0,sizeof(gls_ret_eglTerminate_t),(char *)glsec_global.tmp_buf.buf);
 }
@@ -170,6 +218,9 @@ int egl_executeCommand(gls_command_t *c) {
 			break;
 		case GLSC_eglChooseConfig:
 			glse_eglChooseConfig();
+			break;
+		case GLSC_eglCreateContext:
+			glse_eglCreateContext();
 			break;
 		case GLSC_eglGetConfigAttrib:
 			glse_eglGetConfigAttrib();

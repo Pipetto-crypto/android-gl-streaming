@@ -41,7 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 // To prevent incompatible version, change every
-#define GLS_VERSION 8
+#define GLS_VERSION 9
 // #define GL_MAJOR_VERSION 1
 // #define GL_MINOR_VERSION 2
 
@@ -284,8 +284,39 @@ typedef struct
   uint32_t cmd;
   uint32_t dpy;
   uint32_t config;
+  uint32_t share_list;
+} gls_eglCreateContext_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t context;
+} gls_ret_eglCreateContext_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t config;
   uint32_t attribute;
 } gls_eglGetConfigAttrib_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t ctx;
+} gls_eglDestroyContext_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t success;
+} gls_ret_eglDestroyContext_t;
 
 
 typedef struct
@@ -385,16 +416,34 @@ typedef struct
 {
   uint32_t cmd;
   uint32_t dpy;
-  uint32_t major;
-  uint32_t minor;
 } gls_eglInitialize_t;
 
 
 typedef struct
 {
   uint32_t cmd;
+  uint32_t major;
+  uint32_t minor;
   uint32_t success;
 } gls_ret_eglInitialize_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t draw;
+  uint32_t read;
+  uint32_t ctx;
+} gls_eglMakeCurrent_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t success;
+} gls_ret_eglMakeCurrent_t;
+
 
 typedef struct
 {

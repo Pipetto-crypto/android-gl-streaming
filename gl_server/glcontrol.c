@@ -79,19 +79,19 @@ const char* glGetErrorString(GLenum err)
 }
 #undef CASE_STRING
 
-void base_check_egl_err(char* funcname) {
+void check_egl_err(int funcname) {
 	int error = eglGetError();
 	if (error != EGL_SUCCESS) {
-		LOGD("eglGetError(%s) return error %s", funcname, eglGetErrorString(error));
+		LOGD("eglGetError(%i) return error %s", funcname, eglGetErrorString(error));
 	}
 #ifdef DEBUG
 	assert(error == 0)
 #endif // DEBUG
 }
-void base_check_gl_err(char* funcname) {
+void check_gl_err(int funcname) {
 	int error = glGetError();
 	if (error != GL_NO_ERROR) {
-		LOGD("glGetError(%s) return error %s", funcname, glGetErrorString(error));
+		LOGD("glGetError(%i) return error %s", funcname, glGetErrorString(error));
 	}
 #ifdef DEBUG
 	assert(error == 0)
@@ -155,10 +155,11 @@ void init_egl(graphics_context_t *gc)
   gc->d_window.height = gc->screen_height;
   vc_dispmanx_update_submit_sync(gc->d_update);
   check_gl_err();
-  gc->surface = eglCreateWindowSurface(gc->display, config, &gc->d_window, NULL);
 #elif defined(GLS_SERVER)
   gc->screen_width = glsurfaceview_width; // (gc->d_rect.right - gc->d_rect.left);
   gc->screen_height = glsurfaceview_height; // (gc->d_rect.bottom - gc->d_rect.top);
+  gc->context = EGL_NO_CONTEXT;
+  gc->surface = EGL_NO_SURFACE;
   // gc->d_window = glsurfaceview_window;
   // assert (glsurfaceview_window != NULL);
 #endif
@@ -175,16 +176,6 @@ void init_egl(graphics_context_t *gc)
 #else
   make_egl_base(gc->display, &gc->context, &gc->surface);
 #endif
-
-  if (gc->surface == EGL_NO_SURFACE) {
-	  gc->surface = eglGetCurrentSurface(EGL_DRAW);
-  }
-  assert(gc->surface != EGL_NO_SURFACE);
-  check_gl_err(eglGetCurrentSurface);
-
-  r = eglMakeCurrent(gc->display, gc->surface, gc->surface, gc->context);
-  assert(EGL_FALSE != r);
-  check_gl_err(eglMakeCurrent);
 }
 
 
@@ -216,29 +207,11 @@ void release_egl(graphics_context_t *gc)
  */
  
 #ifdef USE_X11
-void make_egl_base(EGLDisplay egl_dpy, const char *name, int x, int y, int width, int height, Window *winRet, EGLContext *ctxRet, EGLSurface *surfRet)
+void make_egl_base(EGLDisplay egl_dpy, const char *name, int x, int y, int width, int height, Window *winRet)
 #else
 void make_egl_base(EGLDisplay egl_dpy, EGLContext *ctxRet, EGLSurface *surfRet)
 #endif
 {
-   if (!eglInitialize(egl_dpy, NULL, NULL)) {
-      printf("Error: eglInitialize() failed\n");
-      return -1;
-   }
-	
-   static const EGLint attribs[] = {
-      EGL_RED_SIZE, 1,
-      EGL_GREEN_SIZE, 1,
-      EGL_BLUE_SIZE, 1,
-      EGL_DEPTH_SIZE, 1,
-      EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-      EGL_NONE
-   };
-   static const EGLint ctx_attribs[] = {
-      EGL_CONTEXT_CLIENT_VERSION, 2,
-      EGL_NONE
-   };
-   
 #ifdef USE_X11
    XSetWindowAttributes attr;
    unsigned long mask;
@@ -247,11 +220,6 @@ void make_egl_base(EGLDisplay egl_dpy, EGLContext *ctxRet, EGLSurface *surfRet)
    XVisualInfo *visInfo, visTemplate;
    int num_visuals;
 #endif // USE_X11
-
-   EGLContext ctx;
-   EGLConfig config;
-   EGLint num_configs;
-   EGLint vid;
 
 #ifdef USE_X11
    xScreenId = DefaultScreen(xDisplay);
@@ -290,60 +258,10 @@ void make_egl_base(EGLDisplay egl_dpy, EGLContext *ctxRet, EGLSurface *surfRet)
    }
 #endif // USE_X11
 
-   if (!eglChooseConfig( egl_dpy, attribs, &config, 1, &num_configs)) {
-      printf("Error: couldn't get an EGL visual config\n");
-      exit(1);
-   }
-   assert(config);
-   assert(num_configs > 0);
-
-   if (!eglGetConfigAttrib(egl_dpy, config, EGL_NATIVE_VISUAL_ID, &vid)) {
-      printf("Error: eglGetConfigAttrib() failed\n");
-      exit(1);
-   }
-
-   eglBindAPI(EGL_OPENGL_ES_API);
-
-   ctx = eglCreateContext(egl_dpy, config, EGL_NO_CONTEXT, ctx_attribs );
-   if (!ctx) {
-      printf("Error: eglCreateContext failed\n");
-      exit(1);
-   }
-
-   // test eglQueryContext() 
-   {
-      EGLint val;
-      eglQueryContext(egl_dpy, ctx, EGL_CONTEXT_CLIENT_VERSION, &val);
-      // assert(val == 2);
-   }
-   
-#ifdef USE_X11
-   *surfRet = eglCreateWindowSurface(egl_dpy, config, win, NULL);
-#elif defined(__ANDROID__)
-   *surfRet = eglCreateWindowSurface(egl_dpy, config, glsurfaceview_window, NULL);
-#else
-   printf("FIXME!!! on platform without X11 or Android? Windows?\n");
-   exit(1);
-#endif
-
-   if (!*surfRet) {
-      printf("Error: eglCreateWindowSurface failed: %p\n", eglGetError());
-      exit(1);
-   }
-
-   // sanity checks
-   {
-      EGLint val;
-      assert(eglGetConfigAttrib(egl_dpy, config, EGL_SURFACE_TYPE, &val));
-      assert(val & EGL_WINDOW_BIT);
-   }
-   
 #ifdef USE_X11
    XFree(visInfo);
    *winRet = win;
 #endif // USE_X11
-
-   *ctxRet = ctx;
 }
 
 
