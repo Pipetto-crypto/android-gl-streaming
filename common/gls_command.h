@@ -300,6 +300,7 @@ typedef struct
   uint32_t cmd;
   uint32_t dpy;
   uint32_t config;
+  uint32_t attriblist_null;
 } gls_eglCreatePbufferSurface_t;
 
 
@@ -316,6 +317,7 @@ typedef struct
   uint32_t dpy;
   uint32_t config;
   uint32_t pixmap;
+  uint32_t attriblist_null;
 } gls_eglCreatePixmapSurface_t;
 
 
@@ -332,6 +334,7 @@ typedef struct
   uint32_t dpy;
   uint32_t config;
   uint32_t window;
+  uint32_t attriblist_null;
 } gls_eglCreateWindowSurface_t;
 
 

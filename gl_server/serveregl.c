@@ -20,17 +20,17 @@ void glse_eglChooseConfig()
 
   gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsec_global.tmp_buf.buf;
   gls_ret_eglChooseConfig_t *ret = (gls_ret_eglChooseConfig_t *)glsec_global.tmp_buf.buf;
-
+  
   // EGLDisplay dpy = eglGetCurrentDisplay();
   EGLConfig configs[c->config_size];
   EGLBoolean success = eglChooseConfig(c->dpy, dat->attrib_list, configs, c->config_size, &ret->num_config);
   memcpy(ret->configs, configs, ret->num_config);
   ret->success = success;
 /*
-  LOGD("gls info: Num Config = %i\n", ret->num_config);
-  LOGD("gls info: ConfigSize = %i\n", c->config_size);
+  LOGD("gls info: Num Config = %i", ret->num_config);
+  LOGD("gls info: ConfigSize = %i", c->config_size);
   for (int i = 0; i < ret->num_config; i++) {
-	  LOGD("gls info: Config[%i]=%p\n", i, ret->configs[i]);
+	  LOGD("gls info: Config[%i]=%p", i, ret->configs[i]);
   }
 */
   // ret->configs = 
@@ -61,7 +61,16 @@ void glse_eglCreatePbufferSurface()
 {
   GLSE_SET_COMMAND_PTR(c, eglCreatePbufferSurface);
   gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsec_global.tmp_buf.buf;
+  
+  EGLint* attrib_list;
+  if (c->attriblist_null == TRUE) attrib_list = NULL;
+  else attrib_list = dat->attrib_list;
+  
   EGLSurface surface = eglCreatePbufferSurface(c->dpy, c->config, dat->attrib_list);
+  
+  if (surface != EGL_NO_SURFACE) {
+	  glsec_global.gc->surface = surface;
+  }
   
   gls_ret_eglCreatePbufferSurface_t *ret = (gls_ret_eglCreatePbufferSurface_t *)glsec_global.tmp_buf.buf;
   ret->cmd = GLSC_eglCreatePbufferSurface;
@@ -73,8 +82,17 @@ void glse_eglCreatePixmapSurface()
 {
   GLSE_SET_COMMAND_PTR(c, eglCreatePixmapSurface);
   gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsec_global.tmp_buf.buf;
+  
+  EGLint* attrib_list;
+  if (c->attriblist_null == TRUE) attrib_list = NULL;
+  else attrib_list = dat->attrib_list;
+  
   // FIXME unsupported yet!
   EGLSurface surface = eglCreatePixmapSurface(c->dpy, c->config, c->pixmap, dat->attrib_list);
+  
+  if (surface != EGL_NO_SURFACE) {
+	  glsec_global.gc->surface = surface;
+  }
   
   gls_ret_eglCreatePixmapSurface_t *ret = (gls_ret_eglCreatePixmapSurface_t *)glsec_global.tmp_buf.buf;
   ret->cmd = GLSC_eglCreatePixmapSurface;
@@ -86,8 +104,22 @@ void glse_eglCreateWindowSurface()
 {
   GLSE_SET_COMMAND_PTR(c, eglCreateWindowSurface);
   gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsec_global.tmp_buf.buf;
+  
+  EGLint* attrib_list;
+  if (c->attriblist_null == TRUE) attrib_list = NULL;
+  else {
+  	  attrib_list = dat->attrib_list;
+	  for (int i = 0; i < 16; i++) {
+		  LOGD("Attrib[%i]=%p", i, attrib_list[i]);
+	  }
+  }
+  
   // Not using client window!!!
-  EGLSurface surface = eglCreateWindowSurface(c->dpy, c->config, glsec_global.gc->d_window, dat->attrib_list);
+  EGLSurface surface = eglCreateWindowSurface(c->dpy, c->config, glsurfaceview_window, dat->attrib_list);
+  
+  if (surface != EGL_NO_SURFACE) {
+	  glsec_global.gc->surface = surface;
+  }
   
   gls_ret_eglCreateWindowSurface_t *ret = (gls_ret_eglCreateWindowSurface_t *)glsec_global.tmp_buf.buf;
   ret->cmd = GLSC_eglCreateWindowSurface;

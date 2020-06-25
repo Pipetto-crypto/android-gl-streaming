@@ -23,6 +23,9 @@ A fast, simple, lightweight and low latency framework suitable for embedded syst
 
 * android_gl_server : Android demo port app.
 
+## This branch
+- Failure on attempt to let client to initialize EGL.
+
 ## Demo Video (RPi original video)
 
 [Demo Video1](https://youtu.be/6S-Epb6m6mI)

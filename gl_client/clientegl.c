@@ -153,12 +153,14 @@ EGLBoolean eglChooseConfig( EGLDisplay dpy, const EGLint *attrib_list, EGLConfig
 	gls_ret_eglChooseConfig_t *ret = (gls_ret_eglChooseConfig_t *)glsc_global.tmp_buf.buf;
 	*num_config = ret->num_config;
 	
-	// printf("eglChooseConfig()=%p. config_size=%i,num_config=%i\n", ret->success, config_size, ret->num_config);
-	
 	if (configs != NULL) {
 		for (int i = 0; i < ret->num_config; i++) {
 			configs[i] = (EGLConfig) ret->configs[i];
 		}
+	}
+	
+	if (ret->num_config == 0) {
+		*num_config = 1;
 	}
 	
 	return ret->success;
@@ -171,14 +173,18 @@ EGLSurface eglCreateWindowSurface( EGLDisplay dpy, EGLConfig config, NativeWindo
 	xWindow = window;
 	
 	gls_cmd_flush();
-	gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsc_global.tmp_buf.buf;
-	memcpy(dat->attrib_list, attrib_list, GLS_DATA_SIZE);
-	gls_cmd_send_data(0, GLS_STRING_SIZE_PLUS, glsc_global.tmp_buf.buf);
+	if (attrib_list != NULL) {
+		gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsc_global.tmp_buf.buf;
+		memcpy(dat->attrib_list, attrib_list, GLS_DATA_SIZE);
+		gls_cmd_send_data(0, GLS_STRING_SIZE_PLUS, glsc_global.tmp_buf.buf);
+	}
 	
 	GLS_SET_COMMAND_PTR(c, eglCreateWindowSurface);
 	c->dpy = dpy;
 	c->config = config;
 	c->window = window;
+	c->attriblist_null = (attrib_list == NULL ? 1 : 0);
+	printf("FINALLY ATTRIB LIST = NULL ? %i\n", c->attriblist_null);
 	GLS_SEND_PACKET(eglCreateWindowSurface);
     
 	wait_for_data("timeout:eglCreateWindowSurface");
@@ -189,14 +195,17 @@ EGLSurface eglCreateWindowSurface( EGLDisplay dpy, EGLConfig config, NativeWindo
 EGLSurface eglCreatePixmapSurface( EGLDisplay dpy, EGLConfig config, NativePixmapType pixmap, const EGLint *attrib_list )
 {
 	gls_cmd_flush();
-	gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsc_global.tmp_buf.buf;
-	memcpy(dat->attrib_list, attrib_list, GLS_DATA_SIZE);
-	gls_cmd_send_data(0, GLS_STRING_SIZE_PLUS, glsc_global.tmp_buf.buf);
+	if (attrib_list != NULL) {
+		gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsc_global.tmp_buf.buf;
+		memcpy(dat->attrib_list, attrib_list, GLS_DATA_SIZE);
+		gls_cmd_send_data(0, GLS_STRING_SIZE_PLUS, glsc_global.tmp_buf.buf);
+	}
 	
 	GLS_SET_COMMAND_PTR(c, eglCreatePixmapSurface);
 	c->dpy = dpy;
 	c->config = config;
 	c->pixmap = pixmap;
+	c->attriblist_null = (attrib_list == NULL);
 	GLS_SEND_PACKET(eglCreatePixmapSurface);
     
 	wait_for_data("timeout:eglCreatePixmapSurface");
@@ -207,14 +216,17 @@ EGLSurface eglCreatePixmapSurface( EGLDisplay dpy, EGLConfig config, NativePixma
 EGLSurface eglCreatePbufferSurface( EGLDisplay dpy, EGLConfig config, const EGLint *attrib_list )
 {
 	gls_cmd_flush();
-	gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsc_global.tmp_buf.buf;
-	memcpy(dat->attrib_list, attrib_list, GLS_DATA_SIZE);
-	gls_cmd_send_data(0, GLS_STRING_SIZE_PLUS, glsc_global.tmp_buf.buf);
+	if (attrib_list != NULL) {
+		gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsc_global.tmp_buf.buf;
+		memcpy(dat->attrib_list, attrib_list, GLS_DATA_SIZE);
+		gls_cmd_send_data(0, GLS_STRING_SIZE_PLUS, glsc_global.tmp_buf.buf);
+	}
 	
 	GLS_SET_COMMAND_PTR(c, eglCreatePbufferSurface);
 	c->dpy = dpy;
 	c->config = config;
-		GLS_SEND_PACKET(eglCreatePbufferSurface);
+	c->attriblist_null = (attrib_list == NULL);
+	GLS_SEND_PACKET(eglCreatePbufferSurface);
     
 	wait_for_data("timeout:eglCreatePbufferSurface");
 	gls_ret_eglCreatePbufferSurface_t *ret = (gls_ret_eglCreatePbufferSurface_t *)glsc_global.tmp_buf.buf;

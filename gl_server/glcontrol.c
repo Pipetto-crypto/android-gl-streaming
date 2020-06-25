@@ -160,8 +160,8 @@ void init_egl(graphics_context_t *gc)
   gc->screen_height = glsurfaceview_height; // (gc->d_rect.bottom - gc->d_rect.top);
   gc->context = EGL_NO_CONTEXT;
   gc->surface = EGL_NO_SURFACE;
-  // gc->d_window = glsurfaceview_window;
-  // assert (glsurfaceview_window != NULL);
+  gc->d_window = glsurfaceview_window;
+  assert (glsurfaceview_window != NULL);
 #endif
 /*
 #ifdef __ANDROID__
