@@ -637,30 +637,30 @@ void glse_()
 int gles_flushCommand(gls_command_t *c) {
 	// LOGD("Flushing command %i\n", c->cmd);
 	switch (c->cmd) {
-      case GLSC_glAttachShader:
-        glse_glAttachShader();
-        pop_batch_command(sizeof(gls_glAttachShader_t));
-        break;
-      case GLSC_glActiveTexture:
-        glse_glActiveTexture();
-        pop_batch_command(sizeof(gls_glActiveTexture_t));
-        break;
-      case GLSC_glBindBuffer:
-        glse_glBindBuffer();
-        pop_batch_command(sizeof(gls_glBindBuffer_t));
-        break;
-      case GLSC_glBindTexture:
-        glse_glBindTexture();
-        pop_batch_command(sizeof(gls_glBindTexture_t));
-        break;
-      case GLSC_glBindAttribLocation:
-        glse_glBindAttribLocation();
-        pop_batch_command(sizeof(gls_glBindAttribLocation_t));
-        break;
-      case GLSC_glBindFramebuffer:
-        glse_glBindFramebuffer();
-        pop_batch_command(sizeof(gls_glBindFramebuffer_t));
-        break;
+		case GLSC_glAttachShader:
+			glse_glAttachShader();
+			pop_batch_command(sizeof(gls_glAttachShader_t));
+			break;
+		case GLSC_glActiveTexture:
+			glse_glActiveTexture();
+			pop_batch_command(sizeof(gls_glActiveTexture_t));
+			break;
+		case GLSC_glBindBuffer:
+			glse_glBindBuffer();
+			pop_batch_command(sizeof(gls_glBindBuffer_t));
+			break;
+		case GLSC_glBindTexture:
+			glse_glBindTexture();
+			pop_batch_command(sizeof(gls_glBindTexture_t));
+			break;
+		case GLSC_glBindAttribLocation:
+			glse_glBindAttribLocation();
+			pop_batch_command(sizeof(gls_glBindAttribLocation_t));
+			break;
+		case GLSC_glBindFramebuffer:
+			glse_glBindFramebuffer();
+			pop_batch_command(sizeof(gls_glBindFramebuffer_t));
+			break;
       case GLSC_glBlendFuncSeparate:
         glse_glBlendFuncSeparate();
         pop_batch_command(sizeof(gls_glBlendFuncSeparate_t));
@@ -840,38 +840,38 @@ int gles_executeCommand(gls_command_t *c) {
 	// LOGD("Executing command %i\n", c->cmd);
 	switch (c->cmd) {
 		case GLSC_glBufferData:
-          glse_glBufferData();
-          break;
+        	glse_glBufferData();
+        	break;
         case GLSC_glBufferSubData:
-          glse_glBufferSubData();
-          break;
+        	glse_glBufferSubData();
+        	break;
         case GLSC_glCreateProgram:
-          glse_glCreateProgram();
-          break;
+        	glse_glCreateProgram();
+        	break;
         case GLSC_glCreateShader:
-          glse_glCreateShader();
-          break;
+        	glse_glCreateShader();
+        	break;
         case GLSC_glDeleteBuffers:
-          glse_glDeleteBuffers();
-          break;
+        	glse_glDeleteBuffers();
+        	break;
         case GLSC_glFinish:
-          glse_glFinish();
-          break;
+        	glse_glFinish();
+        	break;
         case GLSC_glGenBuffers:
-          glse_glGenBuffers();
-          break;
+        	glse_glGenBuffers();
+        	break;
         case GLSC_glGenTextures:
-          glse_glGenTextures();
-          break;
+        	glse_glGenTextures();
+        	break;
         case GLSC_glGetActiveAttrib:
-          glse_glGetActiveAttrib();
-          break;
+        	glse_glGetActiveAttrib();
+        	break;
         case GLSC_glGetActiveUniform:
-          glse_glGetActiveUniform();
-          break;
+        	glse_glGetActiveUniform();
+        	break;
         case GLSC_glGetAttribLocation:
-          glse_glGetAttribLocation();
-          break;
+        	glse_glGetAttribLocation();
+        	break;
 		case GLSC_glGetError:
 		  glse_glGetError();
 		  break;

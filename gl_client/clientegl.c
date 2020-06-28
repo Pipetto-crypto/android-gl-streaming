@@ -21,16 +21,8 @@ EGLAPI EGLBoolean EGLAPIENTRY eglGetConfigAttrib( EGLDisplay dpy, EGLConfig conf
 	if (attribute == EGL_NATIVE_VISUAL_ID) {
 		*value = XVisualIDFromVisual(XDefaultVisual(xDisplay, xScreenId));
 		return EGL_TRUE;
-	} else {
-		for (int i = 0; i < client_config_size; i+=2) {
-			if (client_config_keys[i] == attribute) {
-				*value = client_config_values[i];
-				return EGL_TRUE;
-			}
-		}
 	}
 
-/*
 	gls_cmd_flush();
 	GLS_SET_COMMAND_PTR(c, eglGetConfigAttrib);
 	c->dpy = dpy;
@@ -40,15 +32,13 @@ EGLAPI EGLBoolean EGLAPIENTRY eglGetConfigAttrib( EGLDisplay dpy, EGLConfig conf
     
 	wait_for_data("timeout:eglGetConfigAttrib");
 	gls_ret_eglGetConfigAttrib_t *ret = (gls_ret_eglGetConfigAttrib_t *)glsc_global.tmp_buf.buf;
-	*value = value;
+	*value = ret->value;
 	
 	return ret->success;
-*/
 }
 
 EGLAPI EGLBoolean EGLAPIENTRY eglGetConfigs( EGLDisplay dpy, EGLConfig *configs, EGLint config_size, EGLint *num_config )
 {
-/*
 	gls_cmd_flush();
 	GLS_SET_COMMAND_PTR(c, eglGetConfigs);
 	c->dpy = dpy;
@@ -60,17 +50,6 @@ EGLAPI EGLBoolean EGLAPIENTRY eglGetConfigs( EGLDisplay dpy, EGLConfig *configs,
 	*num_config = ret->num_config;
 	configs = ret->configs;
 	return ret->success;
-*/
-
-	// Build a fake local config
-	if (client_config_size > 0) {
-		*num_config = client_config_size / 2;
-		for (int i = 0; i < client_config_size; i+=2) {
-			configs[i] = &client_config_values[i+1];
-		}
-	}
-	
-	return EGL_TRUE;
 }
 
 EGLAPI EGLint EGLAPIENTRY eglGetError( void )
@@ -166,7 +145,6 @@ EGLAPI __eglMustCastToProperFunctionPointerType EGLAPIENTRY eglGetProcAddress( c
 
 EGLAPI EGLBoolean EGLAPIENTRY eglChooseConfig( EGLDisplay dpy, const EGLint *attrib_list, EGLConfig *configs, EGLint config_size, EGLint *num_config )
 {
-/*
 	gls_cmd_flush();
 	gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsc_global.tmp_buf.buf;
 	memcpy(dat->attrib_list, attrib_list, GLS_DATA_SIZE);
@@ -184,36 +162,29 @@ EGLAPI EGLBoolean EGLAPIENTRY eglChooseConfig( EGLDisplay dpy, const EGLint *att
 	// printf("eglChooseConfig()=%p. config_size=%i,num_config=%i\n", ret->success, config_size, ret->num_config);
 	
 	if (configs != NULL) {
-		*configs = ret->configs;
-	}
-	
-	return ret->success;
-*/
-
-	// Build a fake local config
-	size_t config_arr_size = sizeof(attrib_list)/sizeof(attrib_list[0]);
-	if (config_arr_size > 0) {
-		client_config_size = config_arr_size;
-		// Skip the last one if it is EGL_NONE
-		if (attrib_list[client_config_size - 1] == EGL_NONE) {
-			client_config_size -= 1;
+		*configs = atoi(ret->configs);
+		
+		/*
+		if (ret->num_config == 1) {
+			*configs = atoi(ret->configs);
 		}
 		
-		// printf("client_config_size=%i\n", client_config_size);
-		*num_config = client_config_size / 2;
-		for (int i = 0; i < client_config_size; i+=2) {
-			if (configs != NULL) configs[i] = &attrib_list[i];
-			client_config_keys[i] = attrib_list[i];
-			client_config_values[i] = attrib_list[i+1];
+		// FIXME maybe wrong!
+		for (int i = 0; i < ret->num_config; i++) {
+			configs[i] = atoi(ret->configs[i]);
 		}
+		*/
 	}
-	
-	return EGL_TRUE;
-	
-	// return eglGetConfigs(dpy, configs, config_size, num_config);
+/*
+	printf("gls info: eglChooseConfig return %i config(s):\n", ret->num_config);
+	for (int i = 0; i < ret->num_config; i++) {
+		printf(" - Config %p\n", ret->configs[i]);
+	}
+*/
+	return ret->success;
 }
 
-EGLAPI EGLSurface EGLAPIENTRY eglCreateWindowSurface( EGLDisplay dpy, EGLConfig config, NativeWindowType window, const EGLint *attrib_list )
+EGLSurface eglCreateWindowSurface( EGLDisplay dpy, EGLConfig config, NativeWindowType window, const EGLint *attrib_list )
 {
 	if (sizeof(void*) != sizeof(window)) {
 		client_egl_error = EGL_BAD_NATIVE_WINDOW;
@@ -223,22 +194,78 @@ EGLAPI EGLSurface EGLAPIENTRY eglCreateWindowSurface( EGLDisplay dpy, EGLConfig 
 	xWindow = window;
 #endif // USE_SERVER_SIZE
 	
-	return eglGetCurrentSurface(EGL_DRAW);
+	// return eglGetCurrentSurface(EGL_DRAW);
+
+	gls_cmd_flush();
+	gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsc_global.tmp_buf.buf;
+	memcpy(dat->attrib_list, attrib_list, GLS_DATA_SIZE);
+	gls_cmd_send_data(0, GLS_STRING_SIZE_PLUS, glsc_global.tmp_buf.buf);
+	
+	GLS_SET_COMMAND_PTR(c, eglCreateWindowSurface);
+	c->dpy = dpy;
+	c->config = config;
+	c->window = window;
+	// c->attrib_list = attrib_list;
+	GLS_SEND_PACKET(eglCreateWindowSurface);
+    
+	wait_for_data("timeout:eglCreateWindowSurface");
+	gls_ret_eglCreateWindowSurface_t *ret = (gls_ret_eglCreateWindowSurface_t *)glsc_global.tmp_buf.buf;
+	return ret->surface;
 }
 
-EGLAPI EGLSurface EGLAPIENTRY eglCreatePixmapSurface( EGLDisplay dpy, EGLConfig config, NativePixmapType pixmap, const EGLint *attrib_list )
+EGLSurface eglCreatePixmapSurface( EGLDisplay dpy, EGLConfig config, NativePixmapType pixmap, const EGLint *attrib_list )
 {
-	return eglGetCurrentSurface(EGL_DRAW);
+	gls_cmd_flush();
+	gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsc_global.tmp_buf.buf;
+	memcpy(dat->attrib_list, attrib_list, GLS_DATA_SIZE);
+	gls_cmd_send_data(0, GLS_STRING_SIZE_PLUS, glsc_global.tmp_buf.buf);
+	
+	GLS_SET_COMMAND_PTR(c, eglCreatePixmapSurface);
+	c->dpy = dpy;
+	c->config = config;
+	c->pixmap = pixmap;
+	// c->attrib_list = attrib_list;
+	GLS_SEND_PACKET(eglCreatePixmapSurface);
+    
+	wait_for_data("timeout:eglCreatePixmapSurface");
+	gls_ret_eglCreatePixmapSurface_t *ret = (gls_ret_eglCreatePixmapSurface_t *)glsc_global.tmp_buf.buf;
+	return ret->surface;
 }
 
-EGLAPI EGLSurface EGLAPIENTRY eglCreatePbufferSurface( EGLDisplay dpy, EGLConfig config, const EGLint *attrib_list )
+EGLSurface eglCreatePbufferSurface( EGLDisplay dpy, EGLConfig config, const EGLint *attrib_list )
 {
-	return eglGetCurrentSurface(EGL_DRAW);
+	gls_cmd_flush();
+	gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsc_global.tmp_buf.buf;
+	memcpy(dat->attrib_list, attrib_list, GLS_DATA_SIZE);
+	gls_cmd_send_data(0, GLS_STRING_SIZE_PLUS, glsc_global.tmp_buf.buf);
+	
+	GLS_SET_COMMAND_PTR(c, eglCreatePbufferSurface);
+	c->dpy = dpy;
+	c->config = config;
+	// c->attrib_list = attrib_list;
+	GLS_SEND_PACKET(eglCreatePbufferSurface);
+    
+	wait_for_data("timeout:eglCreatePbufferSurface");
+	gls_ret_eglCreatePbufferSurface_t *ret = (gls_ret_eglCreatePbufferSurface_t *)glsc_global.tmp_buf.buf;
+	return ret->surface;
 }
 
 EGLAPI EGLBoolean EGLAPIENTRY eglDestroySurface( EGLDisplay dpy, EGLSurface surface )
 {
-    return EGL_TRUE;
+    if (surface == eglGetCurrentSurface(EGL_DRAW)) {
+		// Prevent destroying server surface
+		return EGL_TRUE;
+	}
+	
+	gls_cmd_flush();
+	GLS_SET_COMMAND_PTR(c, eglDestroySurface);
+	c->dpy = dpy;
+	c->surface = surface;
+	GLS_SEND_PACKET(eglDestroySurface);
+    
+	wait_for_data("timeout:eglDestroySurface");
+	gls_ret_eglDestroySurface_t *ret = (gls_ret_eglDestroySurface_t *)glsc_global.tmp_buf.buf;
+	return ret->success;
 }
 
 EGLAPI EGLBoolean EGLAPIENTRY eglQuerySurface( EGLDisplay dpy, EGLSurface surface, EGLint attribute, EGLint *value )
@@ -334,22 +361,52 @@ EGLAPI EGLBoolean EGLAPIENTRY eglSwapInterval( EGLDisplay dpy, EGLint interval )
 
 }
 
-EGLAPI EGLContext EGLAPIENTRY eglCreateContext( EGLDisplay dpy, EGLConfig config, EGLContext share_list, const EGLint *attrib_list )
+EGLAPI EGLContext EGLAPIENTRY eglCreateContext( EGLDisplay dpy, EGLConfig config, EGLContext share_context, const EGLint *attrib_list )
 {
-    // return 1;
+    gls_cmd_flush();
+	gls_data_egl_attriblist_t *dat = (gls_data_egl_attriblist_t *)glsc_global.tmp_buf.buf;
+	memcpy(dat->attrib_list, attrib_list, GLS_DATA_SIZE);
+	gls_cmd_send_data(0, GLS_STRING_SIZE_PLUS, glsc_global.tmp_buf.buf);
 	
-	// Stub: current
-	return eglGetCurrentContext();
+	GLS_SET_COMMAND_PTR(c, eglCreateContext);
+	c->dpy = dpy;
+	c->config = config;
+	c->share_context = share_context;
+	GLS_SEND_PACKET(eglCreateContext);
+	
+    // printf("gls info: eglCreateContext config:%p\n", config);
+		
+	wait_for_data("timeout:eglCreateContext");
+	gls_ret_eglCreateContext_t *ret = (gls_ret_eglCreateContext_t *)glsc_global.tmp_buf.buf;
+	return ret->context;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglDestroyContext( EGLDisplay dpy, EGLContext ctx )
+EGLBoolean eglDestroyContext( EGLDisplay dpy, EGLContext ctx )
 {
-    return EGL_TRUE;
+    gls_cmd_flush();
+	GLS_SET_COMMAND_PTR(c, eglDestroyContext);
+	c->dpy = dpy;
+	c->ctx = ctx;
+	GLS_SEND_PACKET(eglDestroyContext);
+    
+	wait_for_data("timeout:eglDestroyContext");
+	gls_ret_eglDestroyContext_t *ret = (gls_ret_eglDestroyContext_t *)glsc_global.tmp_buf.buf;
+	return ret->success;
 }
 
-EGLAPI EGLBoolean EGLAPIENTRY eglMakeCurrent( EGLDisplay dpy, EGLSurface draw, EGLSurface read, EGLContext ctx )
+EGLBoolean eglMakeCurrent( EGLDisplay dpy, EGLSurface draw, EGLSurface read, EGLContext ctx )
 {
-    return EGL_TRUE;
+    gls_cmd_flush();
+	GLS_SET_COMMAND_PTR(c, eglMakeCurrent);
+	c->dpy = dpy;
+	c->draw = draw;
+	c->read = read;
+	c->ctx = ctx;
+	GLS_SEND_PACKET(eglMakeCurrent);
+    
+	wait_for_data("timeout:eglMakeCurrent");
+	gls_ret_eglMakeCurrent_t *ret = (gls_ret_eglMakeCurrent_t *)glsc_global.tmp_buf.buf;
+	return ret->success;
 }
 
 EGLAPI EGLContext EGLAPIENTRY eglGetCurrentContext(void)

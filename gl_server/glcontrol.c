@@ -155,7 +155,7 @@ void init_egl(graphics_context_t *gc)
   gc->d_window.height = gc->screen_height;
   vc_dispmanx_update_submit_sync(gc->d_update);
   check_gl_err();
-  gc->surface = eglCreateWindowSurface(gc->display, config, &gc->d_window, NULL);
+  // gc->surface = eglCreateWindowSurface(gc->display, config, &gc->d_window, NULL);
 #elif defined(GLS_SERVER)
   gc->screen_width = glsurfaceview_width; // (gc->d_rect.right - gc->d_rect.left);
   gc->screen_height = glsurfaceview_height; // (gc->d_rect.bottom - gc->d_rect.top);
@@ -169,13 +169,9 @@ void init_egl(graphics_context_t *gc)
 */
 
 #ifdef USE_X11
+  gc->surface = eglCreateWindowSurface(gc->display, config, &gc->d_window, NULL);
   make_egl_base(gc->display, "OpenGL ES 2.x streaming", 0, 0, glsurfaceview_width, glsurfaceview_height, &win, &gc->context, &gc->surface);
   XMapWindow(xDisplay, win);
-  // gc->surface = eglCreateWindowSurface(gc->surface, config, win, NULL);
-#else
-  make_egl_base(gc->display, &gc->context, &gc->surface);
-#endif
-
   if (gc->surface == EGL_NO_SURFACE) {
 	  gc->surface = eglGetCurrentSurface(EGL_DRAW);
   }
@@ -185,6 +181,9 @@ void init_egl(graphics_context_t *gc)
   r = eglMakeCurrent(gc->display, gc->surface, gc->surface, gc->context);
   assert(EGL_FALSE != r);
   check_gl_err(eglMakeCurrent);
+#else
+  make_egl_base(gc->display, &gc->context, &gc->surface);
+#endif
 }
 
 

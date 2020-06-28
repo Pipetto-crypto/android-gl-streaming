@@ -287,6 +287,102 @@ typedef struct
   uint32_t cmd;
   uint32_t dpy;
   uint32_t config;
+  uint32_t share_context;
+} gls_eglCreateContext_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t context;
+} gls_ret_eglCreateContext_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t config;
+  // uint32_t attrib_list[GLS_STRING_SIZE_PLUS];
+} gls_eglCreatePbufferSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t surface;
+} gls_ret_eglCreatePbufferSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t config;
+  uint32_t pixmap;
+  // uint32_t attrib_list[GLS_STRING_SIZE_PLUS];
+} gls_eglCreatePixmapSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t surface;
+} gls_ret_eglCreatePixmapSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t config;
+  uint32_t window;
+  // uint32_t attrib_list[GLS_STRING_SIZE_PLUS];
+} gls_eglCreateWindowSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t surface;
+} gls_ret_eglCreateWindowSurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t ctx;
+} gls_eglDestroyContext_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t success;
+} gls_ret_eglDestroyContext_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t surface;
+} gls_eglDestroySurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t success;
+} gls_ret_eglDestroySurface_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t config;
   uint32_t attribute;
 } gls_eglGetConfigAttrib_t;
 
@@ -398,6 +494,24 @@ typedef struct
   uint32_t cmd;
   uint32_t success;
 } gls_ret_eglInitialize_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t dpy;
+  uint32_t draw;
+  uint32_t read;
+  uint32_t ctx;
+} gls_eglMakeCurrent_t;
+
+
+typedef struct
+{
+  uint32_t cmd;
+  uint32_t success;
+} gls_ret_eglMakeCurrent_t;
+
 
 typedef struct
 {
